@@ -4,37 +4,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API 請求範例</title>
-    <!-- 引入 Axios -->
+    <title>新增故事</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
 
-    <h1>故事清單</h1>
+    <h1>新增故事</h1>
 
-    <ul id="storyList"></ul>
+    <form id="addForm">
+        <label for="chapter">章節：</label>
+        <input type="number" id="chapter" name="chapter" required>
+
+        <label for="title">標題：</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="content">故事內容：</label>
+        <input type="text" id="content" name="content" required>
+
+        <button type="submit" class="red">添加</button>
+    </form>
 
     <script>
-        let hostPath = 'http://localhost:3000/getStory';
-        // 使用 Axios 發送 GET 請求
-        axios.get(hostPath)
-            .then(function (response) {
-                // 將 JSON 資料解析並顯示在頁面上
-                var stories = response.data;
-                var storyList = document.getElementById("storyList");
+        document.getElementById('addForm').addEventListener('submit', function (event) {
+            event.preventDefault();
 
-                stories.forEach(function (story) {
-                    var listItem = document.createElement("li");
-                    listItem.textContent = `第 ${story.章節} 章：${story.標題} - ${story.故事內容}`;
-                    storyList.appendChild(listItem);
+            const chapter = document.getElementById('chapter').value;
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            axios.post('http://localhost:3000/addStory', { _chapter: chapter, _title: title, _content: content })
+
+
+                .then(function (response) {
+                    alert(`故事 ${title}已成功添加！`);
+                    console.log(response.data);
+                    document.getElementById('chapter').value = "";
+                    document.getElementById('title').value = "";
+                    document.getElementById('content').value = "";
+                    // 可以在這裡處理成功回應，例如顯示成功訊息或重新載入故事清單
+                })
+                .catch(function (error) {
+                    console.error("請求失敗：" + error.message);
+                    // 可以在這裡處理錯誤，例如顯示錯誤訊息給使用者
                 });
-            })
-            .catch(function (error) {
-                console.error("請求失敗：" + error.message);
-            });
+        });
     </script>
 
 </body>
 
+
 </html>
+
+<style>
+    .red {
+        color: rgb(183, 27, 218);
+        background: red;
+    }
+</style>
