@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 請求範例</title>
+    <!-- 引入 Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+    <h1>故事清單</h1>
+
+    <ul id="storyList"></ul>
+
+    <script>
+        let hostPath = 'http://localhost:3000/getStory';
+        // 使用 Axios 發送 GET 請求
+        axios.get(hostPath)
+            .then(function (response) {
+                // 將 JSON 資料解析並顯示在頁面上
+                var stories = response.data;
+                var storyList = document.getElementById("storyList");
+
+                stories.forEach(function (story) {
+                    var listItem = document.createElement("li");
+                    listItem.textContent = `第 ${story.章節} 章：${story.標題} - ${story.故事內容}`;
+                    storyList.appendChild(listItem);
+                });
+            })
+            .catch(function (error) {
+                console.error("請求失敗：" + error.message);
+            });
+    </script>
+
+</body>
+
+</html>
