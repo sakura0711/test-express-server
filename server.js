@@ -22,7 +22,8 @@ const pool = mariadb.createPool({
 
 /****************************************************
  * 
- *  故事 api [mainchapters]
+ *             故事 api [mainchapters]
+ * 
  *  ✔️ [get]    /getStory    : get all story data
  *  ✔️ [post]   /addStory    : add one story data
  *  ✔️ [put]    /putStory    : modify story content
@@ -95,14 +96,15 @@ app.delete('/delStory', async (req, res) => {
 
 /****************************************************
  * 
- *  武器 api [weapons]
+ *               武器 api [weapons]
+ *  
  *  ✔️ [get]    /getWeapons    : get all weapons data
  *  ✔️ [post]   /addWeapons    : add one weapons data
  *  ✔️ [put]    /putWeapons    : modify weapons content
  *  ✔️ [Delete] /delWeapons    : delete one weapons (use _WeaponID)
  * 
  ****************************************************/
-
+//#region 
 app.get('/getWeapons', async (req, res) => {
     try {
         const conn = await pool.getConnection();
@@ -162,7 +164,7 @@ app.delete('/delWeapons', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+//#endregion
 
 // 啟動伺服器
 const PORT = process.env.PORT || 3000;
