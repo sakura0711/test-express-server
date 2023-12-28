@@ -26,7 +26,7 @@ const pool = mariadb.createPool({
  *  ✔️ [get]    /getStory    : get all story data
  *  ✔️ [post]   /addStory    : add one story data
  *  ✔️ [put]    /putStory    : modify story content
- *  ✔️ [Delete] /delStory    : delete one story (use UUID)
+ *  ✔️ [Delete] /delStory    : delete one story (use _chapterID)
  * 
  ****************************************************/
 //#region 
@@ -92,6 +92,76 @@ app.delete('/delStory', async (req, res) => {
 });
 //#endregion
 
+
+/****************************************************
+ * 
+ *  武器 api [weapons]
+ *  ✔️ [get]    /getWeapons    : get all weapons data
+ *  ✔️ [post]   /addWeapons    : add one weapons data
+ *  ✔️ [put]    /putWeapons    : modify weapons content
+ *  ✔️ [Delete] /delWeapons    : delete one weapons (use _WeaponID)
+ * 
+ ****************************************************/
+
+app.get('/getWeapons', async (req, res) => {
+    try {
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM weapons');
+        conn.release();
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/addWeapons', async (req, res) => {
+    const { _WeaponName, _WeaponType, _WeaponDescription, _WeaponDamage } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(`INSERT INTO weapons 
+                         (WeaponName, WeaponType, WeaponDescription, WeaponDamage) 
+                         VALUES ("${_WeaponName}", "${_WeaponType}", "${_WeaponDescription}", "${_WeaponDamage}")`);
+        conn.release();
+
+        res.json({ success: true, message: `武器 ${_WeaponName} 新增成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.put('/putWeapons', async (req, res) => {
+    const { _WeaponID, _WeaponName, _WeaponType, _WeaponDescription, _WeaponDamage } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` UPDATE weapons
+                           SET WeaponName="${_WeaponName}", WeaponType="${_WeaponType}",
+                               WeaponDescription="${_WeaponDescription}", WeaponDamage=${_WeaponDamage}
+                           WHERE WeaponID=${_WeaponID};`);
+        conn.release();
+
+        res.json({ success: true, message: `武器 ${_WeaponID} 修改成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+app.delete('/delWeapons', async (req, res) => {
+    const { _WeaponID } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(`DELETE FROM weapons WHERE WeaponID=${_WeaponID};`);
+        conn.release();
+
+        res.json({ success: true, message: `武器 ${_WeaponID} 刪除成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 
 // 啟動伺服器
