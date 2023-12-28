@@ -166,6 +166,102 @@ app.delete('/delWeapons', async (req, res) => {
 });
 //#endregion
 
+/**
+ * test
+ */
+
+app.get('/getPlayer', async (req, res) => {
+    try {
+        const conn = await pool.getConnection();
+        const rows = await conn.query(`
+        SELECT 
+            PlayerUUID, 
+            PlayerName, 
+            JSON_OBJECT(
+                'uuid', WeaponUUID,
+                'name', WeaponName,
+                'type', WeaponType ,
+                'description', WeaponDescription,
+                'damage', WeaponDamage
+            ) AS 'playerWeapon', 
+            JSON_OBJECT(
+                'uuid', AttackSkillID,
+                'name',attackskills.SkillName,
+                'description', attackskills.SkillDescription ,
+                'damage', attackskills.SkillDamage
+            ) as 'AttackSkill', 
+            JSON_OBJECT(
+                'uuid', DefenseSkillID,
+                'name',defenseskills.SkillName,
+                'description', defenseskills.SkillDescription ,
+                'damage', defenseskills.SkillDamage
+            ) as 'DefenseSkill', 
+            JSON_OBJECT(
+                'uuid', SupportSkillID,
+                'name',supportskills.SkillName,
+                'description', supportskills.SkillDescription ,
+                'damage', supportskills.SkillDamage
+            ) as 'SupportSkill', 
+            JSON_OBJECT(
+                'uuid', MainChapterID,
+                'chapter',mainchapters.Chapter,
+                'title', mainchapters.Title,
+                'content', mainchapters.StoryContent
+            ) as 'MainChapter',
+            playerLevel
+
+        FROM 
+            gamedb.playerdata
+
+        LEFT join gamedb.weapons ON playerdata.WeaponUUID = weapons.WeaponID
+        LEFT join gamedb.attackskills on playerdata.AttackSkillID = attackskills.SkillID
+        LEFT join gamedb.defenseskills on playerdata.DefenseSkillID = defenseskills.SkillID
+        LEFT join gamedb.supportskills on playerdata.SupportSkillID = supportskills.SkillID
+        LEFT join gamedb.mainchapters on playerdata.MainChapterID = mainchapters.ChapterID`);
+
+        // where PlayerUUID = 10000 添加在行尾，可以執行 條件搜尋
+
+        conn.release();
+        const result = res.json(rows);
+        console.log(result);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
+
+/****************************************************
+ * 
+ *  攻擊技能 api [attackskills]
+ *  /getStory    : get all story data
+ *  /addStory    : add one story data
+ *  /modifyStory : modify story content
+ * 
+ ****************************************************/
+
+/****************************************************
+ * 
+ *  防禦技能 api [defenseskills]
+ *  /getStory    : get all story data
+ *  /addStory    : add one story data
+ *  /modifyStory : modify story content
+ * 
+ ****************************************************/
+
+/****************************************************
+ * 
+ *  輔助技能 api [supportskill]
+ *  /getStory    : get all story data
+ *  /addStory    : add one story data
+ *  /modifyStory : modify story content
+ * 
+ ****************************************************/
+
+
 // 啟動伺服器
 const PORT = process.env.PORT || 3000;
 
