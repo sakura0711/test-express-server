@@ -170,18 +170,17 @@ app.delete('/delWeapons', async (req, res) => {
 //#endregion
 
 
-
 /****************************************************
  * 
  *              攻擊技能 api [attackskills]
  * 
- *  ✔️ [get]    /getAttackSkill    : get all story data
- *  ✔️ [post]   /addAttackSkill    : add one story data
- *  ✔️ [put]    /putAttackSkill    : modify story content
+ *  ✔️ [get]    /getAttackSkill    : get all AttackSkill data
+ *  ✔️ [post]   /addAttackSkill    : add one AttackSkill data
+ *  ✔️ [put]    /putAttackSkill    : modify AttackSkill content
  *  ✔️ [Delete] /delAttackSkill    : delete one AttackSkill (use _skillID)
  * 
  ****************************************************/
-
+//#region 
 app.get('/getAttackSkills', async (req, res) => {
     try {
         const conn = await pool.getConnection();
@@ -239,6 +238,82 @@ app.delete('/delAttackSkill', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+//#endregion
+
+
+/****************************************************
+ * 
+ *              防禦技能 api [defenseskills]
+ * 
+ *  ✔️ [get]    /getDefenseSkill    : get all DefenseSkill data
+ *  ✔️ [post]   /addDefenseSkill    : add one DefenseSkill data
+ *  ✔️ [put]    /putDefenseSkill    : modify DefenseSkill content
+ *  ✔️ [Delete] /delDefenseSkill    : delete one DefenseSkill (use _skillID)
+ * 
+ ****************************************************/
+//#region 
+app.get('/getDefenseSkill', async (req, res) => {
+    try {
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM defenseskills');
+        conn.release();
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/addDefenseSkill', async (req, res) => {
+    try {
+        const { _skillName, _skillDescription, _skillDamage } = req.body;
+        const conn = await pool.getConnection();
+        await conn.query(`INSERT INTO defenseskills
+                          (SkillName, SkillDescription, SkillDamage)
+                          VALUES("${_skillName}", "${_skillDescription}", ${_skillDamage});`);
+        conn.release();
+        res.json({ success: true, message: `防禦技能 : ${_skillName} 新增成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.put('/putDefenseSkill', async (req, res) => {
+    const { _skillID, _skillName, _skillDescription, _skillDamage } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` UPDATE defenseskills
+                           SET SkillName="${_skillName}", SkillDescription= "${_skillDescription}", SkillDamage= ${_skillDamage}
+                           WHERE SkillID=${_skillID};`);
+        conn.release();
+
+        res.json({ success: true, message: `防禦技能 : ${_skillID} 修改成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.delete('/delDefenseSkill', async (req, res) => {
+    const { _skillID } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` DELETE FROM defenseskills
+                           WHERE SkillID=${_skillID};`);
+        conn.release();
+
+        res.json({ success: true, message: `防禦技能 : ${_skillID} 刪除成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+//#endregion
+
+
 
 /**
  * test
