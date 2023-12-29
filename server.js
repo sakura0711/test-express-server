@@ -50,7 +50,9 @@ app.post('/addStory', async (req, res) => {
     const { _chapter, _title, _content } = req.body;
     try {
         const conn = await pool.getConnection();
-        await conn.query(`INSERT INTO mainchapters (Chapter, Title,StoryContent) VALUES (${_chapter}, "${_title}", "${_content}")`);
+        await conn.query(`INSERT INTO mainchapters 
+                        (Chapter, Title, StoryContent) 
+                        VALUES (${_chapter}, "${_title}", "${_content}")`);
         conn.release();
 
         res.json({ success: true, message: `章節 ${_chapter} 新增成功` });
@@ -82,7 +84,8 @@ app.delete('/delStory', async (req, res) => {
     const { _chapterID } = req.body;
     try {
         const conn = await pool.getConnection();
-        await conn.query(`DELETE FROM mainchapters WHERE ChapterID=${_chapterID};`);
+        await conn.query(`DELETE FROM mainchapters 
+                          WHERE ChapterID=${_chapterID};`);
         conn.release();
 
         res.json({ success: true, message: `章節 ${_chapterID} 刪除成功` });
@@ -166,6 +169,77 @@ app.delete('/delWeapons', async (req, res) => {
 });
 //#endregion
 
+
+
+/****************************************************
+ * 
+ *              攻擊技能 api [attackskills]
+ * 
+ *  ✔️ [get]    /getAttackSkill    : get all story data
+ *  ✔️ [post]   /addAttackSkill    : add one story data
+ *  ✔️ [put]    /putAttackSkill    : modify story content
+ *  ✔️ [Delete] /delAttackSkill    : delete one AttackSkill (use _skillID)
+ * 
+ ****************************************************/
+
+app.get('/getAttackSkills', async (req, res) => {
+    try {
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM attackskills');
+        conn.release();
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/addAttackSkill', async (req, res) => {
+    try {
+        const { _skillName, _skillDescription, _skillDamage } = req.body;
+        const conn = await pool.getConnection();
+        await conn.query(`INSERT INTO attackskills
+                          (SkillName, SkillDescription, SkillDamage)
+                          VALUES("${_skillName}", "${_skillDescription}", ${_skillDamage});`);
+        conn.release();
+        res.json({ success: true, message: `攻擊技能 : ${_skillName} 新增成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.put('/putAttackSkill', async (req, res) => {
+    const { _skillID, _skillName, _skillDescription, _skillDamage } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` UPDATE attackskills
+                           SET SkillName="${_skillName}", SkillDescription= "${_skillDescription}", SkillDamage= ${_skillDamage}
+                           WHERE SkillID=${_skillID};`);
+        conn.release();
+
+        res.json({ success: true, message: `攻擊技能 : ${_skillID} 修改成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.delete('/delAttackSkill', async (req, res) => {
+    const { _skillID } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` DELETE FROM attackskills
+                           WHERE SkillID=${_skillID};`);
+        conn.release();
+
+        res.json({ success: true, message: `攻擊技能 : ${_skillID} 刪除成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 /**
  * test
  */
@@ -232,34 +306,6 @@ app.get('/getPlayer', async (req, res) => {
 });
 
 
-
-
-/****************************************************
- * 
- *  攻擊技能 api [attackskills]
- *  /getStory    : get all story data
- *  /addStory    : add one story data
- *  /modifyStory : modify story content
- * 
- ****************************************************/
-
-/****************************************************
- * 
- *  防禦技能 api [defenseskills]
- *  /getStory    : get all story data
- *  /addStory    : add one story data
- *  /modifyStory : modify story content
- * 
- ****************************************************/
-
-/****************************************************
- * 
- *  輔助技能 api [supportskill]
- *  /getStory    : get all story data
- *  /addStory    : add one story data
- *  /modifyStory : modify story content
- * 
- ****************************************************/
 
 
 // 啟動伺服器
