@@ -451,8 +451,40 @@ app.get('/getPlayer', async (req, res) => {
     }
 });
 
+/**
+ * 
+ * INSERT INTO gamedb.playerdata
+(PlayerUUID, PlayerName, WeaponUUID, AttackSkillID, DefenseSkillID, SupportSkillID, MainChapterID, playerLevel)
+VALUES('', '', NULL, NULL, NULL, NULL, NULL, NULL);
+ */
 
+app.post('/addPlayer', async (req, res) => {
+    try {
+        const { _playerUUID, _playerName,
+            _weaponUUID,
+            _attackSkillID, _defenseSkillID, _supportSkillID,
+            _mainChapterID,
+            _playerLevel } = req.body;
 
+        const conn = await pool.getConnection();
+        await conn.query(`INSERT INTO playerdata
+                          (PlayerUUID, PlayerName, 
+                           WeaponUUID, 
+                           AttackSkillID, DefenseSkillID, SupportSkillID, 
+                           MainChapterID, 
+                           playerLevel)
+                          VALUES("${_playerUUID}", "${_playerName}", 
+                                  ${_weaponUUID},
+                                  ${_attackSkillID}, ${_defenseSkillID}, ${_supportSkillID}, 
+                                  ${_mainChapterID},
+                                  ${_playerLevel});`);
+        conn.release();
+        res.json({ success: true, message: `玩家 < UUID : ${_playerUUID} , 名稱 : ${_playerName} > 新增成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 // 啟動伺服器
 const PORT = process.env.PORT || 3000;
