@@ -386,11 +386,18 @@ app.delete('/delSupportSkill', async (req, res) => {
 //#endregion
 
 
-/**
- * test
- */
+/****************************************************
+ * 
+ *              玩家資訊 api [playerdata]
+ * 
+ *  ✔️ [get]    /getAllPlayer  : get all player data
+ *  ✔️ [post]   /addPlayer     : add one player data
+ *  ✔️ [put]    /putPlayer     : modify player content
+ *  ✔️ [Delete] /delPlayer     : delete one player (use _playerUUID [string])
+ * 
+ ****************************************************/
 
-app.get('/getPlayer', async (req, res) => {
+app.get('/getAllPlayer', async (req, res) => {
     try {
         const conn = await pool.getConnection();
         const rows = await conn.query(`
@@ -451,13 +458,6 @@ app.get('/getPlayer', async (req, res) => {
     }
 });
 
-/**
- * 
- * INSERT INTO gamedb.playerdata
-(PlayerUUID, PlayerName, WeaponUUID, AttackSkillID, DefenseSkillID, SupportSkillID, MainChapterID, playerLevel)
-VALUES('', '', NULL, NULL, NULL, NULL, NULL, NULL);
- */
-
 app.post('/addPlayer', async (req, res) => {
     try {
         const { _playerUUID, _playerName,
@@ -485,6 +485,50 @@ app.post('/addPlayer', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+app.put('/putPlayer', async (req, res) => {
+    const { _playerUUID, _playerName,
+        _weaponUUID,
+        _attackSkillID, _defenseSkillID, _supportSkillID,
+        _mainChapterID,
+        _playerLevel } = req.body;
+
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` UPDATE playerdata
+                           SET PlayerName="${_playerName}",
+                               WeaponUUID=${_weaponUUID},
+                               AttackSkillID=${_attackSkillID},
+                               DefenseSkillID=${_defenseSkillID},
+                               SupportSkillID=${_supportSkillID},
+                               MainChapterID=${_mainChapterID},
+                               PlayerLevel=${_playerLevel}
+                           WHERE PlayerUUID="${_playerUUID}";`);
+        conn.release();
+
+        res.json({ success: true, message: `玩家 < UUID : ${_playerUUID} , 名稱 : ${_playerName} > 修改成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.delete('/delPlayer', async (req, res) => {
+    const { _playerUUID } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` DELETE FROM playerdata
+                           WHERE PlayerUUID="${_playerUUID}";`);
+        conn.release();
+
+        res.json({ success: true, message: `玩家 < UUID : ${_playerUUID} > 刪除成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
 
 // 啟動伺服器
 const PORT = process.env.PORT || 3000;
