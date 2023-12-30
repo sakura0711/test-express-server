@@ -314,6 +314,77 @@ app.delete('/delDefenseSkill', async (req, res) => {
 //#endregion
 
 
+/****************************************************
+ * 
+ *              防禦技能 api [supportskills]
+ * 
+ *  ✔️ [get]    /getSupportSkill    : get all SupportSkill data
+ *  ✔️ [post]   /addSupportSkill    : add one SupportSkill data
+ *  ✔️ [put]    /putSupportSkill    : modify SupportSkill content
+ *  ✔️ [Delete] /delSupportSkill    : delete one SupportSkill (use _skillID)
+ * 
+ ****************************************************/
+//#region 
+app.get('/getSupportSkill', async (req, res) => {
+    try {
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM supportskills');
+        conn.release();
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/addSupportSkill', async (req, res) => {
+    try {
+        const { _skillName, _skillDescription, _skillDamage } = req.body;
+        const conn = await pool.getConnection();
+        await conn.query(`INSERT INTO supportskills
+                          (SkillName, SkillDescription, SkillDamage)
+                          VALUES("${_skillName}", "${_skillDescription}", ${_skillDamage});`);
+        conn.release();
+        res.json({ success: true, message: `輔助技能 : ${_skillName} 新增成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.put('/putSupportSkill', async (req, res) => {
+    const { _skillID, _skillName, _skillDescription, _skillDamage } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` UPDATE supportskills
+                           SET SkillName="${_skillName}", SkillDescription= "${_skillDescription}", SkillDamage= ${_skillDamage}
+                           WHERE SkillID=${_skillID};`);
+        conn.release();
+
+        res.json({ success: true, message: `輔助技能 : ${_skillID} 修改成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.delete('/delSupportSkill', async (req, res) => {
+    const { _skillID } = req.body;
+    try {
+        const conn = await pool.getConnection();
+        await conn.query(` DELETE FROM supportskills
+                           WHERE SkillID=${_skillID};`);
+        conn.release();
+
+        res.json({ success: true, message: `輔助技能 : ${_skillID} 刪除成功` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+//#endregion
+
 
 /**
  * test
