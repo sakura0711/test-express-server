@@ -3,6 +3,7 @@ const mariadb = require('mariadb');
 const cors = require('cors');
 const bodyParser = require('body-parser');  // 新增這一行
 
+const { SqlError } = require('mariadb');
 
 const app = express();
 
@@ -36,7 +37,8 @@ const pool = mariadb.createPool({
 app.get('/getStory', async (req, res) => {
     try {
         const conn = await pool.getConnection();
-        const rows = await conn.query('SELECT * FROM mainchapters');
+        const rows = await conn.query(`SELECT * FROM mainchapters
+                                       ORDER BY Chapter ASC;`);
         conn.release();
         res.json(rows);
     } catch (err) {
@@ -91,8 +93,15 @@ app.delete('/delStory', async (req, res) => {
 
         res.json({ success: true, message: `章節 ${_chapterID} 刪除成功` });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
+        if (err instanceof SqlError && err.code.includes('ROW_IS_REFERENCED')) {
+            const errStr = {
+                status: 200,
+                loadType: 'ROW_IS_REFERENCED',
+                data: []
+            };
+            console.error(errStr);
+            res.status(500).send(errStr);
+        }
     }
 });
 //#endregion
@@ -122,15 +131,15 @@ app.get('/getWeapons', async (req, res) => {
 });
 
 app.post('/addWeapons', async (req, res) => {
-    const { _WeaponName, _WeaponType, _WeaponDescription, _WeaponDamage } = req.body;
+    const { _weaponName, _weaponType, _weaponDescription, _weaponDamage } = req.body;
     try {
         const conn = await pool.getConnection();
         await conn.query(`INSERT INTO weapons 
                          (WeaponName, WeaponType, WeaponDescription, WeaponDamage) 
-                         VALUES ("${_WeaponName}", "${_WeaponType}", "${_WeaponDescription}", "${_WeaponDamage}")`);
+                         VALUES ("${_weaponName}", "${_weaponType}", "${_weaponDescription}", "${_weaponDamage}")`);
         conn.release();
 
-        res.json({ success: true, message: `武器 ${_WeaponName} 新增成功` });
+        res.json({ success: true, message: `武器 ${_weaponName} 新增成功` });
     } catch (err) {
         console.error(err);
         res.status(500).send('Internal Server Error');
@@ -138,16 +147,16 @@ app.post('/addWeapons', async (req, res) => {
 });
 
 app.put('/putWeapons', async (req, res) => {
-    const { _WeaponID, _WeaponName, _WeaponType, _WeaponDescription, _WeaponDamage } = req.body;
+    const { _weaponID, _weaponName, _weaponType, _weaponDescription, _weaponDamage } = req.body;
     try {
         const conn = await pool.getConnection();
         await conn.query(` UPDATE weapons
-                           SET WeaponName="${_WeaponName}", WeaponType="${_WeaponType}",
-                               WeaponDescription="${_WeaponDescription}", WeaponDamage=${_WeaponDamage}
-                           WHERE WeaponID=${_WeaponID};`);
+                           SET WeaponName="${_weaponName}", WeaponType="${_weaponType}",
+                               WeaponDescription="${_weaponDescription}", WeaponDamage=${_weaponDamage}
+                           WHERE WeaponID=${_weaponID};`);
         conn.release();
 
-        res.json({ success: true, message: `武器 ${_WeaponID} 修改成功` });
+        res.json({ success: true, message: `武器 ${_weaponID} 修改成功` });
     } catch (err) {
         console.error(err);
         res.status(500).send('Internal Server Error');
@@ -156,16 +165,27 @@ app.put('/putWeapons', async (req, res) => {
 
 
 app.delete('/delWeapons', async (req, res) => {
-    const { _WeaponID } = req.body;
+    const { _weaponID } = req.body;
     try {
         const conn = await pool.getConnection();
-        await conn.query(`DELETE FROM weapons WHERE WeaponID=${_WeaponID};`);
+        await conn.query(`DELETE FROM weapons WHERE WeaponID=${_weaponID};`);
         conn.release();
 
-        res.json({ success: true, message: `武器 ${_WeaponID} 刪除成功` });
+        res.json({ success: true, message: `武器 ${_weaponID} 刪除成功` });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
+        if (err instanceof SqlError && err.code.includes('ROW_IS_REFERENCED')) {
+            const errStr = {
+                status: 200,
+                loadType: 'ROW_IS_REFERENCED',
+                data: []
+            };
+            console.error(errStr);
+            res.status(500).send(errStr);
+        }
+        else {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        }
     }
 });
 //#endregion
@@ -235,8 +255,19 @@ app.delete('/delAttackSkill', async (req, res) => {
 
         res.json({ success: true, message: `攻擊技能 : ${_skillID} 刪除成功` });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
+        if (err instanceof SqlError && err.code.includes('ROW_IS_REFERENCED')) {
+            const errStr = {
+                status: 200,
+                loadType: 'ROW_IS_REFERENCED',
+                data: []
+            };
+            console.error(errStr);
+            res.status(500).send(errStr);
+        }
+        else {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        }
     }
 });
 
@@ -307,8 +338,19 @@ app.delete('/delDefenseSkill', async (req, res) => {
 
         res.json({ success: true, message: `防禦技能 : ${_skillID} 刪除成功` });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
+        if (err instanceof SqlError && err.code.includes('ROW_IS_REFERENCED')) {
+            const errStr = {
+                status: 200,
+                loadType: 'ROW_IS_REFERENCED',
+                data: []
+            };
+            console.error(errStr);
+            res.status(500).send(errStr);
+        }
+        else {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        }
     }
 });
 
@@ -379,8 +421,19 @@ app.delete('/delSupportSkill', async (req, res) => {
 
         res.json({ success: true, message: `輔助技能 : ${_skillID} 刪除成功` });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
+        if (err instanceof SqlError && err.code.includes('ROW_IS_REFERENCED')) {
+            const errStr = {
+                status: 200,
+                loadType: 'ROW_IS_REFERENCED',
+                data: []
+            };
+            console.error(errStr);
+            res.status(500).send(errStr);
+        }
+        else {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        }
     }
 });
 
