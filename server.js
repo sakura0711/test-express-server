@@ -489,7 +489,8 @@ app.get('/getAllPlayer', async (req, res) => {
                 'title', mainchapters.Title,
                 'content', mainchapters.StoryContent
             ) as 'MainChapter',
-            playerLevel
+            playerLevel,
+            playerComment
 
         FROM 
             gamedb.playerdata
@@ -518,7 +519,7 @@ app.post('/addPlayer', async (req, res) => {
             _weaponUUID,
             _attackSkillID, _defenseSkillID, _supportSkillID,
             _mainChapterID,
-            _playerLevel } = req.body;
+            _playerLevel, _playerComment } = req.body;
 
         const conn = await pool.getConnection();
         await conn.query(`INSERT INTO playerdata
@@ -526,12 +527,12 @@ app.post('/addPlayer', async (req, res) => {
                            WeaponUUID, 
                            AttackSkillID, DefenseSkillID, SupportSkillID, 
                            MainChapterID, 
-                           playerLevel)
+                           playerLevel,playerComment)
                           VALUES("${_playerUUID}", "${_playerName}", 
                                   ${_weaponUUID},
                                   ${_attackSkillID}, ${_defenseSkillID}, ${_supportSkillID}, 
                                   ${_mainChapterID},
-                                  ${_playerLevel});`);
+                                  ${_playerLevel},"${_playerComment}");`);
         conn.release();
         res.json({ success: true, message: `玩家 < UUID : ${_playerUUID} , 名稱 : ${_playerName} > 新增成功` });
     } catch (err) {
@@ -545,7 +546,7 @@ app.put('/putPlayer', async (req, res) => {
         _weaponUUID,
         _attackSkillID, _defenseSkillID, _supportSkillID,
         _mainChapterID,
-        _playerLevel } = req.body;
+        _playerLevel, _playerComment } = req.body;
 
     try {
         const conn = await pool.getConnection();
@@ -556,7 +557,8 @@ app.put('/putPlayer', async (req, res) => {
                                DefenseSkillID=${_defenseSkillID},
                                SupportSkillID=${_supportSkillID},
                                MainChapterID=${_mainChapterID},
-                               PlayerLevel=${_playerLevel}
+                               PlayerLevel=${_playerLevel},
+                               PlayerComment="${_playerComment}"
                            WHERE PlayerUUID="${_playerUUID}";`);
         conn.release();
 
